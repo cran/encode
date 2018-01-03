@@ -1,13 +1,13 @@
-eb691c687a0e93869c6c5e4b23926539 *DESCRIPTION
+fde24fe51378d2483503772ade95b778 *DESCRIPTION
 3291f9a829851f8b67dba3821603c43f *NAMESPACE
-1524b3de6caf12ff6484d72271534595 *R/encode.R
+6178a919205760bb210d11f2c89f02de *R/encode.R
 29618ff86744620a908c543a57a5f57a *man/codes.Rd
 04726c94f44aeb6bbdae8df3e1d25a03 *man/codes.default.Rd
 c810c440a4c02f3014d5c12dcb7e79d7 *man/decode.Rd
 1f147a527413dc3039a23812efd9f997 *man/decode.default.Rd
 cca3ef4ba5dbff951923831c5251aa59 *man/decodes.Rd
 127cc43bebc945ef88aaa291e6e77f9a *man/decodes.default.Rd
-b457c0d186753ea2300134c290ee8cc8 *man/encode.Rd
+5bd9f088312ba66fc65ab24675864d4d *man/encode.Rd
 4a088712680371d06f7547920b589289 *man/encode.character.Rd
 6ac58c5148dea66cac555b7741f1e796 *man/encode.default.Rd
 a5d4e842081fe50e0a064bea887b15f7 *man/encode.list.Rd
