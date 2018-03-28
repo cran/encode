@@ -1,7 +1,7 @@
 Package: encode
 Type: Package
 Title: Represent Ordered Lists and Pairs as Strings
-Version: 0.3.3
+Version: 0.3.4
 Author: Tim Bergsma
 Maintainer: Tim Bergsma <bergsmat@gmail.com>
 Description: Interconverts between ordered lists and compact string notation.  
@@ -15,6 +15,6 @@ Imports:
 Suggests:
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2017-12-29 19:42:31 UTC; tbergsma
+Packaged: 2018-03-28 13:06:20 UTC; tbergsma
 Repository: CRAN
-Date/Publication: 2018-01-03 13:06:13 UTC
+Date/Publication: 2018-03-28 22:22:52 UTC
