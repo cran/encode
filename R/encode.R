@@ -28,6 +28,7 @@
 #' @param ... passed arguments
 #' @seealso \code{\link{encode.character}} \code{\link{encode.default}} \code{\link{encode.list}} \code{\link{codes}} \code{\link{decodes}} \code{\link{decode}} \code{\link{encoded}}
 #' @export
+#' @family encode
 #' @examples
 #' 
 #' a <- encode(
@@ -76,6 +77,7 @@ encode <- function(x,...)UseMethod('encode')
 #' @inheritParams encode
 #' @param labels same length as x if supplied
 #' @return list
+#' @family encode
 #' @export
 encode.list <- function(x,labels=NULL,...){
   if(!is.null(labels) & length(labels) != length(x))stop('lengths of x and labels must match')
@@ -91,6 +93,7 @@ is.defined <- function(x)!is.na(x)
 #' @param labels same length as x if supplied
 #' @param sep a single character not present in x or labels
 #' @return character
+#' @family encode
 #' @export
 encode.character <- function(x, labels = NULL, sep = NULL, ...){
   if(!is.null(labels) & length(labels) != length(x))stop('lengths of x and labels must match')
@@ -114,6 +117,7 @@ encode.character <- function(x, labels = NULL, sep = NULL, ...){
 #' @inheritParams encode
 #' @param labels same length as x if supplied
 #' @return character
+#' @family encode
 #' @export
 encode.default <- function(x,labels=NULL,...)encode(as.character(x),labels=labels,...)
 
@@ -159,6 +163,7 @@ encode.default <- function(x,labels=NULL,...)encode(as.character(x),labels=label
 #' @param x object
 #' @param ... passed arguments
 #' @export
+#' @family encoded
 #' @seealso \code{\link{encoded.default}}
 encoded <- function(x, ...)UseMethod('encoded')
 
@@ -167,6 +172,7 @@ encoded <- function(x, ...)UseMethod('encoded')
 #' Checks if object is encoded, using default methodology. Always returns logical, telling whether the corresponding element represents an encoding of levels and labels. Objects with zero length give \code{FALSE}.
 #' @inheritParams encoded
 #' @export
+#' @family encoded
 #' @return logical
 encoded.default <- function(x, ...){
   if(length(x) == 0) return(FALSE)
@@ -205,6 +211,7 @@ encoded.default <- function(x, ...){
 #' @param x object
 #' @param ... passed arguments
 #' @seealso \code{\link{codes.default}}
+#' @family codes
 #' @export
 codes <- function(x,...)UseMethod('codes')
 
@@ -215,6 +222,7 @@ codes <- function(x,...)UseMethod('codes')
 #' @inheritParams codes
 #' @param simplify whether to convert length one list to vector
 #' @return list, or vector if simplify = TRUE
+#' @family codes
 #' @export
 codes.default <- function(x, simplify = TRUE, ...){
   y <- lapply(x,.codes)
@@ -227,6 +235,7 @@ codes.default <- function(x, simplify = TRUE, ...){
 #' @param x object
 #' @param ... passed arguments
 #' @seealso \code{\link{decodes.default}}
+#' @family decodes
 #' @export
 decodes <- function(x,...)UseMethod('decodes')
 #' Extract Decodes by Default from an Object
@@ -236,6 +245,7 @@ decodes <- function(x,...)UseMethod('decodes')
 #' @inheritParams decodes
 #' @param simplify whether to convert length one list to vector
 #' @return list, or vector if simplify = TRUE
+#' @family decodes
 #' @export
 decodes.default <- function(x, simplify = TRUE, ...){
   y <- lapply(x,.decodes)
@@ -260,6 +270,7 @@ map <- function (x, from, to, strict = TRUE, ...)
 #' @param ... passed arguments
 #' @seealso \code{\link{decode.default}}
 #' @export
+#' @family decode
 decode <- function(x,...)UseMethod('decode')
 
 #' Decode an Object by Default
@@ -270,6 +281,7 @@ decode <- function(x,...)UseMethod('decode')
 #' @param encoding length one character that is itself encoded
 #' @return factor
 #' @export
+#' @family decode
 decode.default <- function(x,encoding = NULL, ...){
   if(is.null(encoding)) encoding <- encode(unique(x),unique(x),sep=defaultSep(unique(x)))
   stopifnot(length(encoding) == 1)
@@ -292,4 +304,75 @@ defaultSep <- function(x,...){
   }
   if(!length(sep)) stop('x contains all the default candidates for sep')
   sep
+}
+
+#' Coerce to Factor using Encoding if Present
+#'
+#' Coerces to factor, blending levels with encoding, if present as a 'guide' attribute. Vectors without encodings (or with empty encodings) acquire levels equal to \code{unique(x)} (notice that storage order controls presentation order). Vectors with non-empty encodings are decoded after harmonizing the encoding and the actual data. Factors with encodings defer to order and display value of the encoding as much as possible.  Missing levels are supplied.  Unused levels are removed. Other attributes beside 'class' and 'levels' are preserved.
+#'
+#' @export
+#' @param x vector or factor
+#' @return factor
+#' @family decode
+#' @examples
+#' library(magrittr)
+#' foo <- c(1, 2, NA, 4, 5)
+#' as_factor(foo)
+#' as_factor(factor(foo))
+#' as_factor(as.factor(foo))
+#' as_factor(structure(foo, guide = '....'))
+#' as_factor(structure(foo, guide = '//5//'))
+#' as_factor(structure(foo, guide = '//5/bar//'))
+#' as_factor(structure(foo, guide = '//5/bar//6/baz//'))
+#' as_factor(structure(factor(foo), guide = '//5/bar//'))
+#' as_factor(structure(factor(foo), guide = '//5/bar//')) %>% sort
+#' as_factor(structure(factor(foo), guide = '....'))
+#' as_factor(structure(factor(foo), guide = '//1/bar//5/bar//'))
+#'
+#'
+as_factor <- function(x){
+  at <- attributes(x)
+  at[['guide']] <- NULL
+  at[['class']] <- NULL
+  at[['levels']] <- NULL
+  guide <- attr(x,'guide') # may be NULL (not encoded)
+  vals <- if(is.factor(x)) levels(x) else unique(x)
+  vals <- vals[!is.na(vals)]
+  if(is.null(guide)) guide <- encode(vals) # guide present
+  if(!encoded(guide)) guide <- encode(vals) # guide encoded
+  if(!length(decodes(guide))) guide <- encode(vals) # guide non-empty
+  codes <- codes(guide)
+  decodes <- decodes(guide)
+  decodes[is.na(decodes)] <- codes[is.na(decodes)] # decodes fully defined
+  extra <- setdiff(vals, codes) # values not captured by encoding
+  codes <- c(codes, extra) # all possible values now recognized ...
+  decodes <- c(decodes, extra) # ... and displayed as themselves
+  encoding <- encode(codes, labels = decodes)
+  x <- as.character(x)
+  x <- decode(x, encoding = encoding)
+  #x <- factor(x)
+  for(a in names(at))attr(x,a) <- at[[a]]
+  x
+}
+
+#' Decode Data Frame.
+#'
+#' Decodes a data.frame. Calls as_factor() for each column with an encoded guide attribute.
+#'
+#' @export
+#' @param x inherits data.frame
+#' @param ... ignored
+#' @return same class as x
+#' @family decode
+
+decode.data.frame <- function(x, ...){
+  dec <- function(x){
+    guide <- attr(x,'guide')
+    if(is.null(guide)) return(x)
+    if(is.na(guide)) return(x)
+    if(!encoded(guide)) return(x)
+    as_factor(x)
+  }
+  x[] <- lapply(x,dec)
+  x
 }
